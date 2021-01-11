@@ -92,12 +92,16 @@ async function add(toy) {
 }
 async function update(toy) {
     try {
-        delete toy._id
+        toy._id = ObjectId(toy._id);
+        toy.upadtedAt = Date.now()
         const collection = await dbService.getCollection('toy')
-        const res = await collection.updateOne({ "_id": ObjectId(toy._id) }, { $set: {name: 'toy.name'} })
-        const {matchedCount, modifiedCount} = res
-        console.log('res', matchedCount, modifiedCount);
-        return res.ops[0];
+        // const res = await collection.replaceOne({ "_id": ObjectId(toy._id) }, toy )
+
+        await collection.updateOne({ "_id": ObjectId(toy._id) }, { $set: toy })
+        // console.log(toyToSave);
+        // const {matchedCount, modifiedCount} = res
+        // console.log('res', matchedCount, modifiedCount);
+        return toy
     } catch (err) {
         logger.error('cannot update toy in db', err)
         throw err
