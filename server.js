@@ -9,12 +9,12 @@ const app = express()
 const http = require('http').createServer(app)
 
 const session = expressSession({
-    secret: 'coding is amazing',
-    resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false }
-})
-// Express App Config
+        secret: 'coding is amazing',
+        resave: false,
+        saveUninitialized: true,
+        cookie: { secure: false }
+    })
+    // Express App Config
 app.use(cookieParser())
 app.use(bodyParser.json())
 app.use(session)
@@ -29,7 +29,7 @@ if (process.env.NODE_ENV === 'production') {
     app.use(cors(corsOptions))
 }
 
-const toyRoutes = require('./api/toy/toy.routes')
+const boardRoutes = require('./api/board/board.routes')
 const authRoutes = require('./api/auth/auth.routes')
 const userRoutes = require('./api/user/user.routes')
 const reviewRoutes = require('./api/review/review.routes')
@@ -39,7 +39,7 @@ const { connectSockets } = require('./services/socket.service')
 // routes
 const setupAsyncLocalStorage = require('./middlewares/setupAls.middleware')
 app.all('*', setupAsyncLocalStorage)
-app.use('/api/toy', toyRoutes)
+app.use('/api/board', boardRoutes)
 app.use('/api/auth', authRoutes)
 app.use('/api/user', userRoutes)
 app.use('/api/review', reviewRoutes)

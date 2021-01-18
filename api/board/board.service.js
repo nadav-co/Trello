@@ -2,12 +2,13 @@ const dbService = require('../../services/db.service')
 const ObjectId = require('mongodb').ObjectId
 const asyncLocalStorage = require('../../services/als.service')
 
-async function query(filterBy = {}) {
-    console.log('query with filter:', filterBy)
+async function query(userId) {
+    console.log('board query with filter:', userId)
     try {
-        const criteria = _buildCriteria(filterBy)
-        const collection = await dbService.getCollection('toy')
-        var toys = await collection.find(criteria).toArray()
+        const collection = await dbService.getCollection('board')
+            // var boards = await collection.find({ members: { _id: ObjectId(userId) } }).toArray()
+            var boards = await collection.find().toArray()
+            console.log(boards)
             // var toys = await collection.aggregate([{
             //     $match: filterBy
             // }]).toArray()
@@ -45,31 +46,39 @@ async function query(filterBy = {}) {
         //     delete toy.byUserId
         //     return toy
         // })
-        return toys
+        return boards
     } catch (err) {
-        logger.error('cannot find toys', err)
+        logger.error('cannot find boards', err)
         throw err
     }
 
 }
 
 async function getById(id) {
-    const collection = await dbService.getCollection('toy')
-    const toy = await collection.findOne({ _id: ObjectId(id) })
-    return toy
+    const store = asyncLocalStorage.getStore()
+    const { userId, isAdmin } = store
+    try {
+        const collection = await dbService.getCollection('board')
+        const board = await collection.findOne({ _id: ObjectId(id) })
+            // if (board.members.some(member => member._id === userId) || isAdmin) return board
+        return board
+        throw new Error('UnAuthorise')
+    } catch (err) {
+        console.log(err);
+        throw err
+    }
 
 }
 
-async function remove(toyId) {
+async function remove(boardId) {
     try {
         const store = asyncLocalStorage.getStore()
         const { userId, isAdmin } = store
-        const collection = await dbService.getCollection('toy')
+        const collection = await dbService.getCollection('board')
             // remove only if user is owner/admin
-        const query = { _id: ObjectId(toyId) }
-        if (!isAdmin) query.byUserId = ObjectId(userId)
-        await collection.deleteOne(query)
-            // return await collection.deleteOne({ _id: ObjectId(toyId) })
+        const query = { _id: ObjectId(board) }
+        if (!isAdmin) query.createdBy = ObjectId(userId)
+        return await collection.deleteOne(query)
     } catch (err) {
         logger.error(`cannot remove toy ${toyId}`, err)
         throw err
@@ -77,33 +86,30 @@ async function remove(toyId) {
 }
 
 
-async function add(toy) {
-    console.log('adding review')
+async function add(board) {
+    console.log('adding board')
     try {
-        // peek only updatable fields!
-        const toyToAdd = {...toy }
-        const collection = await dbService.getCollection('toy')
-        const res = await collection.insertOne(toyToAdd)
+
+        const boardToAdd = {...board }
+        const collection = await dbService.getCollection('board')
+        const res = await collection.insertOne(boardToAdd)
         return res.ops[0];
     } catch (err) {
-        logger.error('cannot insert toy', err)
+        logger.error('cannot insert board', err)
         throw err
     }
 }
-async function update(toy) {
+async function update(board) {
     try {
-        toy._id = ObjectId(toy._id);
-        toy.upadtedAt = Date.now()
-        const collection = await dbService.getCollection('toy')
-        // const res = await collection.replaceOne({ "_id": ObjectId(toy._id) }, toy )
-
-        await collection.updateOne({ "_id": ObjectId(toy._id) }, { $set: toy })
-        // console.log(toyToSave);
-        // const {matchedCount, modifiedCount} = res
-        // console.log('res', matchedCount, modifiedCount);
-        return toy
+        board._id = ObjectId(board._id);
+        const collection = await dbService.getCollection('board')
+        await collection.update({ "_id": ObjectId(board._id) }, { $set: board })
+            // console.log(boardToSave);
+            // const {matchedCount, modifiedCount} = res
+            // console.log('res', matchedCount, modifiedCount);
+        return board
     } catch (err) {
-        logger.error('cannot update toy in db', err)
+        logger.error('cannot update board in db', err)
         throw err
     }
 }
