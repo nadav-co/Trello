@@ -8,7 +8,11 @@ async function getBoards(req, res) {
     console.log('got req')
     try {
         const user = req.session.user
-        const boards = await boardService.query(user?._id)
+        if(!user) {
+            res.status(403)
+            return
+        }
+        const boards = await boardService.query(user._id)
         res.send(boards)
     } catch (err) {
         logger.error('Cannot get boards', err)
@@ -42,6 +46,7 @@ async function addBoard(req, res) {
         const board = req.body
             // board.byUserId = req.session.user?._id
         board.createdBy = req.session.user
+        board.members = [req.session.user]
         const savedBoard = await boardService.add(board)
         res.send(savedBoard)
 
@@ -55,8 +60,8 @@ async function updateBoard(req, res) {
     try {
         const board = req.body
         const savedBoard = await boardService.update(board)
-        broadcast({ type: 'updateBoard', data: board }, true)
         res.send(savedBoard)
+        broadcast({ type: 'board update', data: board }, true)
 
     } catch (err) {
         logger.error('Failed to update board', err)

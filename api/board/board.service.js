@@ -8,44 +8,6 @@ async function query(userId) {
         const collection = await dbService.getCollection('board')
             // var boards = await collection.find({ members: { _id: ObjectId(userId) } }).toArray()
             var boards = await collection.find().toArray()
-            console.log(boards)
-            // var toys = await collection.aggregate([{
-            //     $match: filterBy
-            // }]).toArray()
-
-
-        // var toys = await collection.aggregate([{
-        //         $match: filterBy
-        //     },
-        //     {
-        //         $lookup: {
-        //             from: 'user',
-        //             localField: 'byUserId',
-        //             foreignField: '_id',
-        //             as: 'byUser'
-        //         }
-        //     },
-        //     {
-        //         $unwind: '$byUser'
-        //     },
-        //     {
-        //         $lookup: {
-        //             from: 'user',
-        //             localField: 'aboutUserId',
-        //             foreignField: '_id',
-        //             as: 'aboutUser'
-        //         }
-        //     },
-        //     {
-        //         $unwind: '$aboutUser'
-        //     }
-        // ]).toArray()
-        // const prettyToys = toys.map(toy => {
-        //     console.log('toy', toy)
-        //     toy.byUser = { _id: toy.byUser._id, fullname: toy.byUser.fullname }
-        //     delete toy.byUserId
-        //     return toy
-        // })
         return boards
     } catch (err) {
         logger.error('cannot find boards', err)
@@ -62,7 +24,7 @@ async function getById(id) {
         const board = await collection.findOne({ _id: ObjectId(id) })
             // if (board.members.some(member => member._id === userId) || isAdmin) return board
         return board
-        throw new Error('UnAuthorise')
+        // throw new Error('UnAuthorise')
     } catch (err) {
         console.log(err);
         throw err
@@ -103,7 +65,7 @@ async function update(board) {
     try {
         board._id = ObjectId(board._id);
         const collection = await dbService.getCollection('board')
-        await collection.update({ "_id": ObjectId(board._id) }, { $set: board })
+        await collection.updateOne({ "_id": ObjectId(board._id) }, { $set: board })
             // console.log(boardToSave);
             // const {matchedCount, modifiedCount} = res
             // console.log('res', matchedCount, modifiedCount);

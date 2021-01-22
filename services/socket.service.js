@@ -23,15 +23,17 @@ function connectSockets(http, session) {
     }))
 
     gIo.on('connection', socket => {
-        // console.log('socket.handshake', socket.handshake)
+        console.log('user connected')
+        // console.log('socket.handshake', socket.handshake.sessionID )
         gSocketBySessionIdMap[socket.handshake.sessionID] = socket
         socket.on('disconnect', socket => {
-            console.log('Someone disconnected')
             if (socket.handshake) {
                 gSocketBySessionIdMap[socket.handshake.sessionID] = null
             }
+            console.log('disconnecting')
         })
         socket.on('join board', boardId => {
+            console.log('joining')
                 if (socket.currBoard) {
                     socket.leave(socket.currBoard)
                 }
@@ -51,14 +53,20 @@ function connectSockets(http, session) {
 
 // Send to all sockets BUT not the current socket 
 function broadcast({ type, data }, subscribersOnly = false) {
-    const store = asyncLocalStorage.getStore()
-    const { sessionId } = store
-    if (!sessionId) return logger.debug('Shoudnt happen, no sessionId in asyncLocalStorage store')
-    const excludedSocket = gSocketBySessionIdMap[sessionId]
-    if (!excludedSocket) return logger.debug('Shouldnt happen, No socket in map', gSocketBySessionIdMap)
-
-    if (subscribersOnly) excludedSocket.broadcast.to(excludedSocket.currBoard).emit(type, data)
-    else excludedSocket.broadcast.emit(type, data)
+    try{
+        const store = asyncLocalStorage.getStore()
+        const { sessionId } = store
+        if (!sessionId) return logger.debug('Shoudnt happen, no sessionId in asyncLocalStorage store')
+        const excludedSocket = gSocketBySessionIdMap[sessionId]
+        if (!excludedSocket) return logger.debug('Shouldnt happen, No socket in map', gSocketBySessionIdMap)
+        if (subscribersOnly){
+            excludedSocket.to(excludedSocket.currBoard).emit(type, data)   //does not work
+            // excludedSocket.broadcast.emit(type, data)
+        }
+        else excludedSocket.broadcast.emit(type, data)
+    } catch(err) {
+        logger.debug('failed to emit socket event')
+    }
 }
 
 module.exports = {

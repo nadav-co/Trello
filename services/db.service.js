@@ -7,7 +7,7 @@ module.exports = {
 }
 
 // Database Name
-const dbName = 'TRELLO_DB'
+const dbName = (process.env.NODE_ENV === 'production') ? 'TRELLO_DB' : 'LOCAL_TRELLO_DB'
 
 var dbConn = null
 
