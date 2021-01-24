@@ -1,3 +1,4 @@
+const { ObjectId } = require('mongodb')
 const logger = require('../../services/logger.service')
 const { emit, broadcast } = require('../../services/socket.service')
 const userService = require('../user/user.service')
@@ -45,8 +46,10 @@ async function addBoard(req, res) {
     try {
         const board = req.body
             // board.byUserId = req.session.user?._id
-        board.createdBy = req.session.user
-        board.members = [req.session.user]
+        const {user} = req.session
+        user._id = ObjectId(user._id)
+        board.createdBy = user
+        board.members = [user]
         const savedBoard = await boardService.add(board)
         res.send(savedBoard)
 
