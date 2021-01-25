@@ -6,8 +6,9 @@ async function query(userId) {
     console.log('board query with filter:', userId)
     try {
         const collection = await dbService.getCollection('board')
+            var boards = await collection.find({members: {$elemMatch: {'_id': userId}}}).toArray()
             // var boards = await collection.find({members: {$elemMatch: {'_id': ObjectId(userId)}}}).toArray()
-            var boards = await collection.find().toArray()
+            // var boards = await collection.find().toArray()
         return boards
     } catch (err) {
         logger.error('cannot find boards', err)

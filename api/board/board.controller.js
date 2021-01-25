@@ -10,7 +10,7 @@ async function getBoards(req, res) {
     try {
         const user = req.session.user
         if(!user) {
-            res.status(403)
+            res.status(403).send({ err:'no user!'})
             return
         }
         const boards = await boardService.query(user._id)
@@ -47,7 +47,7 @@ async function addBoard(req, res) {
         const board = req.body
             // board.byUserId = req.session.user?._id
         const {user} = req.session
-        user._id = ObjectId(user._id)
+        // user._id = ObjectId(user._id)
         board.createdBy = user
         board.members = [user]
         const savedBoard = await boardService.add(board)
