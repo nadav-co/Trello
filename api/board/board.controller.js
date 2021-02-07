@@ -10,6 +10,7 @@ async function getBoards(req, res) {
     try {
         const user = req.session.user
         if(!user) {
+            console.log('no user');
             res.status(403).send({ err:'no user!'})
             return
         }
